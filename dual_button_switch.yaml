@@ -1,0 +1,134 @@
+blueprint:
+  name: Dual Button Switch Actions
+  description: >
+    Assign actions to all press combinations of a dual-button (left/right/both)
+    switch action sensor (e.g. Zigbee2MQTT or ZHA sensor.*_action entities).
+  domain: automation
+  homeassistant:
+    min_version: "2024.6.0"
+  input:
+    action_sensor:
+      name: Action Sensor
+      description: The sensor that reports button actions
+      selector:
+        entity:
+          domain: sensor
+
+    left_section:
+      name: Left Button
+      icon: mdi:arrow-left-bold
+      collapsed: true
+      input:
+        left_action:
+          name: Left (single)
+          description: Action for left button single press
+          default: []
+          selector:
+            action: {}
+        left_double_action:
+          name: Left (double)
+          description: Action for left button double press
+          default: []
+          selector:
+            action: {}
+        left_long_action:
+          name: Left (long)
+          description: Action for left button long press
+          default: []
+          selector:
+            action: {}
+
+    right_section:
+      name: Right Button
+      icon: mdi:arrow-right-bold
+      collapsed: true
+      input:
+        right_action:
+          name: Right (single)
+          description: Action for right button single press
+          default: []
+          selector:
+            action: {}
+        right_double_action:
+          name: Right (double)
+          description: Action for right button double press
+          default: []
+          selector:
+            action: {}
+        right_long_action:
+          name: Right (long)
+          description: Action for right button long press
+          default: []
+          selector:
+            action: {}
+
+    both_section:
+      name: Both Buttons
+      icon: mdi:arrow-left-right-bold
+      collapsed: true
+      input:
+        both_action:
+          name: Both (single)
+          description: Action when both buttons are pressed once
+          default: []
+          selector:
+            action: {}
+        both_double_action:
+          name: Both (double)
+          description: Action when both buttons are double-pressed
+          default: []
+          selector:
+            action: {}
+        both_long_action:
+          name: Both (long)
+          description: Action when both buttons are long-pressed
+          default: []
+          selector:
+            action: {}
+
+triggers:
+  - trigger: state
+    entity_id: !input action_sensor
+    from: ""
+
+actions:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'left' }}"
+        sequence: !input left_action
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'left_double' }}"
+        sequence: !input left_double_action
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'left_long' }}"
+        sequence: !input left_long_action
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'right' }}"
+        sequence: !input right_action
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'right_double' }}"
+        sequence: !input right_double_action
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'right_long' }}"
+        sequence: !input right_long_action
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'both' }}"
+        sequence: !input both_action
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'both_double' }}"
+        sequence: !input both_double_action
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.to_state.state == 'both_long' }}"
+        sequence: !input both_long_action
+
+mode: parallel
+max: 10
