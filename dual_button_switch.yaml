@@ -2,17 +2,19 @@ blueprint:
   name: Dual Button Switch Actions
   description: >
     Assign actions to all press combinations of a dual-button (left/right/both)
-    switch action sensor (e.g. Zigbee2MQTT or ZHA sensor.*_action entities).
+    switch. Select a Home Assistant event entity, such as a Zigbee2MQTT
+    event.*_action entity. A press sets event_type to single_left, double_left,
+    or hold_left, and the same single, double, and hold forms for right and both.
   domain: automation
   homeassistant:
     min_version: "2024.6.0"
   input:
-    action_sensor:
-      name: Action Sensor
-      description: The sensor that reports button actions
+    action_event:
+      name: Action event
+      description: Event entity that reports button presses
       selector:
         entity:
-          domain: sensor
+          domain: event
 
     left_section:
       name: Left Button
@@ -21,19 +23,19 @@ blueprint:
       input:
         left_action:
           name: Left (single)
-          description: Action for left button single press
+          description: Action for a single press of the left button
           default: []
           selector:
             action: {}
         left_double_action:
           name: Left (double)
-          description: Action for left button double press
+          description: Action for a double press of the left button
           default: []
           selector:
             action: {}
         left_long_action:
           name: Left (long)
-          description: Action for left button long press
+          description: Action for a long press of the left button
           default: []
           selector:
             action: {}
@@ -45,19 +47,19 @@ blueprint:
       input:
         right_action:
           name: Right (single)
-          description: Action for right button single press
+          description: Action for a single press of the right button
           default: []
           selector:
             action: {}
         right_double_action:
           name: Right (double)
-          description: Action for right button double press
+          description: Action for a double press of the right button
           default: []
           selector:
             action: {}
         right_long_action:
           name: Right (long)
-          description: Action for right button long press
+          description: Action for a long press of the right button
           default: []
           selector:
             action: {}
@@ -88,46 +90,47 @@ blueprint:
 
 triggers:
   - trigger: state
-    entity_id: !input action_sensor
-    from: ""
+    entity_id: !input action_event
+    not_from:
+      - unavailable
 
 actions:
   - choose:
       - conditions:
           - condition: template
-            value_template: "{{ trigger.to_state.state == 'left' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type | default('') == 'single_left' }}"
         sequence: !input left_action
       - conditions:
           - condition: template
-            value_template: "{{ trigger.to_state.state == 'left_double' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type | default('') == 'double_left' }}"
         sequence: !input left_double_action
       - conditions:
           - condition: template
-            value_template: "{{ trigger.to_state.state == 'left_long' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type | default('') == 'hold_left' }}"
         sequence: !input left_long_action
       - conditions:
           - condition: template
-            value_template: "{{ trigger.to_state.state == 'right' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type | default('') == 'single_right' }}"
         sequence: !input right_action
       - conditions:
           - condition: template
-            value_template: "{{ trigger.to_state.state == 'right_double' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type | default('') == 'double_right' }}"
         sequence: !input right_double_action
       - conditions:
           - condition: template
-            value_template: "{{ trigger.to_state.state == 'right_long' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type | default('') == 'hold_right' }}"
         sequence: !input right_long_action
       - conditions:
           - condition: template
-            value_template: "{{ trigger.to_state.state == 'both' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type | default('') == 'single_both' }}"
         sequence: !input both_action
       - conditions:
           - condition: template
-            value_template: "{{ trigger.to_state.state == 'both_double' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type | default('') == 'double_both' }}"
         sequence: !input both_double_action
       - conditions:
           - condition: template
-            value_template: "{{ trigger.to_state.state == 'both_long' }}"
+            value_template: "{{ trigger.to_state.attributes.event_type | default('') == 'hold_both' }}"
         sequence: !input both_long_action
 
 mode: parallel
